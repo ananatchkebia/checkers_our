@@ -86,7 +86,7 @@ class Board:
             print(i+1,'  ',end='')
             print(''.join(f'{x:15}' for x in self.board[i]))
         
-    def make_move(self,y1,x1,y2,x2):
+    def make_move(self,y1,x1,y2,x2,win):
         #If movement is legal than make move
         if self.is_legal_move(y1,x1,y2,x2):
            #Check if this movement is simple movement or killing opponent's piece
@@ -98,17 +98,24 @@ class Board:
                   #detect location of opponent's piece
                 if(y2>y1 and x2>x1):
                     self.board[y1+1][x1+1] = "BlackSquare"
+                    pygame.draw.rect(win, BLACK, ((x1+1) * SQUARE_SIZE,(y1+1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2>y1 and x2<x1):
                     self.board[y1+1][x1-1] = "BlackSquare"
+                    pygame.draw.rect(win, BLACK, ((x1-1) * SQUARE_SIZE,(y1+1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2<y1 and x2<x1):
                     self.board[y1-1][x1-1] = "BlackSquare"
+                    pygame.draw.rect(win, BLACK, ((x1-1) * SQUARE_SIZE,(y1-1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2<y1 and x2>x1):
                     self.board[y1-1][x1+1] = "BlackSquare"
+                    pygame.draw.rect(win, BLACK, ((x1+1) * SQUARE_SIZE,(y1-1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
             #this is simple movement,so we just have to swap values on the board's following locations[y1][x1] and [y2][y1] 
-            temp_variable = self.board[y2][x2]
-            self.board[y2][x2] = self.board[y1][x1]
-            self.board[y1][x1] = temp_variable
-                
+            self.board[y2][x2], self.board[y1][x1] = self.board[y1][x1], self.board[y2][x2]
+            pygame.draw.rect(win, BLACK, (x1 * SQUARE_SIZE,y1 * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            if(self.board[y2][x2] == "BluePiece"):
+                Piece(y2,x2,BLUE).draw(win)
+            if(self.board[y2][x2] == "RedPiece"):
+                Piece(y2,x2,RED).draw(win)
     def is_legal_move(self,y1,x1,y2,x2):
         #check that destination is black_square(so this square is empty and available)
         if self.board[y2][x2] != "BlackSquare": 
@@ -178,6 +185,7 @@ def main():
     board = Board(WIN)
     click_number = 0
     click_list = []
+   
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -192,7 +200,7 @@ def main():
                     #board.make_move(cl_1_row,cl_1_col,cl_2_row,cl_2_col)
             if(click_number != 0 and len(click_list) != 0 and not click_number % 2): 
                 print("make move ",click_list)
-                board.make_move(click_list[0][0],click_list[0][1],click_list[1][0],click_list[1][1])
+                board.make_move(click_list[0][0],click_list[0][1],click_list[1][0],click_list[1][1],WIN)
                 pygame.display.update()
                 click_list.clear()
                 board.board_representation()
