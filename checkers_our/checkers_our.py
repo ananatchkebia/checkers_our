@@ -1,3 +1,4 @@
+from pickle import NONE
 import pygame
 
 WIDTH, HEIGHT = 500, 500
@@ -46,7 +47,43 @@ class Piece:
         pygame.draw.circle(win,self.color,(self.x, self.y), radius )
         if(self.king):
             win.blit(CROWN,(self.x - CROWN.get_width()//2,self.y - CROWN.get_height()//2))
-       
+            
+    #get square which are legal to move current piece 
+    def valid_squares_to_move(self,board):
+        print("hi")
+        valid_squares_row_col_dict = {}
+        if(self.color == RED):
+            if(board[self.row - 1][self.col + 1].piece == None):
+                if(self.row - 1 >= 0 and self.row - 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
+                    valid_squares_row_col_dict["UpRight"]=[self.row - 1, self.col + 1]
+            elif(board[self.row - 1][self.col + 1].piece.color == BLUE and board[self.row - 2][self.col + 2].piece == None):
+                if(self.row - 2 >= 0 and self.row - 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
+                    valid_squares_row_col_dict["UpRightKill"]=[self.row - 2, self.col + 2]
+            if(board[self.row - 1][self.col - 1].piece == None):
+                if(self.row - 1 >= 0 and self.row - 1 <= 8 and self.col - 1 >= 0 and self.col - 1 <= 8):
+                    valid_squares_row_col_dict["UpLeft"]=[self.row - 1, self.col - 1]
+            elif(board[self.row - 1][self.col - 1].piece.color == BLUE and board[self.row - 2][self.col - 2].piece == None):
+                if(self.row - 2 >= 0 and self.row - 2 <= 8 and self.col - 2 >= 0 and self.col - 2 <= 8):
+                    valid_squares_row_col_dict["UpLeftKill"]=[self.row - 2, self.col - 2]
+        if(self.color == BLUE):
+            if(board[self.row + 1][self.col + 1].piece == None):
+                if(self.row + 1 >= 0 and self.row + 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
+                    valid_squares_row_col_dict["DownRight"]=[self.row + 1, self.col + 1]
+            elif(board[self.row + 1][self.col + 1].piece.color == BLUE and board[self.row + 2][self.col + 2].piece == None):
+                if(self.row + 2 >= 0 and self.row + 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
+                    valid_squares_row_col_dict["DownRightKill"]=[self.row + 2, self.col + 2]
+            if(board[self.row + 1][self.col - 1].piece == None):
+                if(self.row + 1 >= 0 and self.row + 1 <= 8 and self.col - 1 >= 0 and self.col - 1 <= 8):
+                    valid_squares_row_col_dict["DownLeft"]=[self.row + 1, self.col - 1]
+            elif(board[self.row + 1][self.col - 1].piece.color == BLUE and board[self.row + 2][self.col + 2].piece == None): 
+                if(self.row + 2 >= 0 and self.row + 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
+                    valid_squares_row_col_dict["DownLeftKill"]=[self.row + 2, self.col + 2]       
+        return valid_squares_row_col_dict
+class Square:
+    def __init__(self, sq_color,piece = None ):
+        self.square_color = sq_color
+        self.piece = piece
+        
 class Board:
     def __init__(self, win =None):
         self.board = []
@@ -54,16 +91,16 @@ class Board:
             self.board.append([])
             for j in range(COLS):
                 if (not (i % 2)) and (not(j % 2)) :
-                    self.board[i].append("BlackSquare") 
+                    self.board[i].append(Square(BLACK)) 
                     pygame.draw.rect(win, BLACK, (i * SQUARE_SIZE,j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif (not(i % 2)) and (j % 2) :
-                    self.board[i].append("WhiteSquare")
+                    self.board[i].append(Square(WHITE))
                     pygame.draw.rect(win, WHITE, (i * SQUARE_SIZE,j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif (i % 2) and (not(j % 2)) :
-                    self.board[i].append("WhiteSquare")
+                    self.board[i].append(Square(WHITE))
                     pygame.draw.rect(win, WHITE, (i * SQUARE_SIZE,j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif (i % 2) and (j % 2) :
-                    self.board[i].append("BlackSquare") 
+                    self.board[i].append(Square(BLACK)) 
                     pygame.draw.rect(win, BLACK, (i * SQUARE_SIZE,j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
         self.initial_setup(win)
@@ -71,20 +108,23 @@ class Board:
     def initial_setup(self,win):
         for i in range(0,3):
             for j in range(COLS):
-                if self.board[i][j] == "BlackSquare":
-                    self.board[i][j] = "BluePiece"
-                    Piece(i,j,BLUE).draw(win)
+                if self.board[i][j].square_color == BLACK:
+                    #self.board[i][j] = "BluePiece"
+                    self.board[i][j].piece = Piece(i,j,BLUE)
+                    self.board[i][j].piece.draw(win)
         for i in range(5,8):
             for j in range(COLS):
-                if self.board[i][j] == "BlackSquare":
-                    self.board[i][j] = "RedPiece"
-                    Piece(i,j,RED).draw(win)
-
+                if self.board[i][j].square_color == BLACK:
+                    #self.board[i][j] = "RedPiece"
+                    self.board[i][j].piece = Piece(i,j,RED)
+                    self.board[i][j].piece .draw(win)
+    '''
     def board_representation(self):
         print(''.join(f'{x:15}' for x in range(1,9)))
         for i in range(ROWS):
             print(i+1,'  ',end='')
-            print(''.join(f'{x:15}' for x in self.board[i]))
+            print(''.join(f'{x.color:15}' for x in self.board[i]))
+    '''   
         
     def make_move(self,y1,x1,y2,x2,win):
         #If movement is legal than make move
@@ -97,28 +137,28 @@ class Board:
                 print("this is killing")
                   #detect location of opponent's piece
                 if(y2>y1 and x2>x1):
-                    self.board[y1+1][x1+1] = "BlackSquare"
+                    self.board[y1+1][x1+1].square_color = BLACK
                     pygame.draw.rect(win, BLACK, ((x1+1) * SQUARE_SIZE,(y1+1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2>y1 and x2<x1):
-                    self.board[y1+1][x1-1] = "BlackSquare"
+                    self.board[y1+1][x1-1].square_color = BLACK
                     pygame.draw.rect(win, BLACK, ((x1-1) * SQUARE_SIZE,(y1+1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2<y1 and x2<x1):
-                    self.board[y1-1][x1-1] = "BlackSquare"
+                    self.board[y1-1][x1-1].square_color = BLACK
                     pygame.draw.rect(win, BLACK, ((x1-1) * SQUARE_SIZE,(y1-1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 elif(y2<y1 and x2>x1):
-                    self.board[y1-1][x1+1] = "BlackSquare"
+                    self.board[y1-1][x1+1].square_color = BLACK
                     pygame.draw.rect(win, BLACK, ((x1+1) * SQUARE_SIZE,(y1-1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
             #this is simple movement,so we just have to swap values on the board's following locations[y1][x1] and [y2][y1] 
             self.board[y2][x2], self.board[y1][x1] = self.board[y1][x1], self.board[y2][x2]
             pygame.draw.rect(win, BLACK, (x1 * SQUARE_SIZE,y1 * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-            if(self.board[y2][x2] == "BluePiece"):
+            if(self.board[y2][x2].piece.color == BLUE):
                 Piece(y2,x2,BLUE).draw(win)
-            if(self.board[y2][x2] == "RedPiece"):
+            if(self.board[y2][x2].piece.color == RED):
                 Piece(y2,x2,RED).draw(win)
     def is_legal_move(self,y1,x1,y2,x2):
         #check that destination is black_square(so this square is empty and available)
-        if self.board[y2][x2] != "BlackSquare": 
+        if self.board[y2][x2].square_color != BLACK: 
             print(y2+1," ",x2+1," is not BlackSquare") 
             return False
         #check that movement is valid for non-queen piece
@@ -126,7 +166,7 @@ class Board:
         return True
     def legal_move_main_rule(self,y1,x1,y2,x2):
         #if piece is red than it can move up-right or up-left
-        if(self.board[y1][x1] == "RedPiece"):
+        if(self.board[y1][x1].piece.color == RED):
             print("you want to move red piece!")
             #move is not valid if it is not directed up with one or two squares
             if(y1 - y2 != 1 and y1 - y2 != 2):
@@ -150,12 +190,12 @@ class Board:
                 print("This is killing")
                 if(abs(x2 - x1) != 2):return False
                 if(x1 > x2):
-                    if(self.board[y1-1][x1-1] != "BluePiece"):return False
+                    if(self.board[y1-1][x1-1].piece.color != BLUE):return False
                 else:
-                    if(self.board[y1-1][x1+1] != "BluePiece"):return False
+                    if(self.board[y1-1][x1+1].piece.color != BLUE):return False
                 return True   
         #if piece is black than it can move down-right or down-left
-        if(self.board[y1][x1] == "BluePiece"):
+        if(self.board[y1][x1].piece.color == BLUE):
             print("you want to move Blue piece!")
             #move is not valid if it is not directed down with one or two squares
             if(y2 - y1 != 1 and y2 - y1 != 2):return False
@@ -172,10 +212,10 @@ class Board:
                 if(abs(x2 - x1) != 2): 
                     return False
                 if(x1 > x2):
-                    if(self.board[y1+1][x1-1] != "RedPiece"):
+                    if(self.board[y1+1][x1-1].piece.color != RED):
                         return False
                 else:
-                    if(self.board[y1+1][x1+1] != "RedPiece"):
+                    if(self.board[y1+1][x1+1].piece.color != RED):
                         return False
                 return True
 def main(): 
@@ -183,7 +223,6 @@ def main():
     run = True
     clock = pygame.time.Clock()
     board = Board(WIN)
-    click_number = 0
     click_list = []
    
     while run:
@@ -193,18 +232,23 @@ def main():
                 run = False
             if(pygame.mouse.get_pressed()[0]):
                 cl_row, cl_col = get_row_col_with_mouse_pos(pygame.mouse.get_pos())
-                click_list.append([cl_row,cl_col])
-                print(cl_row," ",cl_col)
-                click_number += 1
-                print(click_number)
-                    #board.make_move(cl_1_row,cl_1_col,cl_2_row,cl_2_col)
-            if(click_number != 0 and len(click_list) != 0 and not click_number % 2): 
-                print("make move ",click_list)
-                board.make_move(click_list[0][0],click_list[0][1],click_list[1][0],click_list[1][1],WIN)
-                pygame.display.update()
-                click_list.clear()
-                board.board_representation()
-                break
+                print(cl_row,' ',cl_col)
+                if(board.board[cl_row][cl_col].piece!= None):
+                    valid_moves = board.board[cl_row][cl_col].piece.valid_squares_to_move(board.board)
+                    print(valid_moves)
+                    for moves in valid_moves.values():
+                        print(moves[0]+1,' ',moves[1]+1)
+                        pygame.draw.circle(WIN,GREY,((moves[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(moves[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
+                    pygame.display.update()
+                #click_list.append([cl_row,cl_col])
+                #print(cl_row," ",cl_col)
+                
+               
+                #print("make move ",click_list)
+                #board.make_move(click_list[0][0],click_list[0][1],click_list[1][0],click_list[1][1],WIN)
+                #click_list.clear()
+                #board.board_representation()
+                #break
             '''
             if event.type == pygame.MOUSEBUTTONDOWN and event.type == pygame.MOUSEBUTTONDOWN:
                 pos1 = pygame.mouse.get_pos()
