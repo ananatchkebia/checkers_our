@@ -50,15 +50,15 @@ class Piece:
             
     #get square which are legal to move current piece 
     def valid_squares_to_move(self,board):
-        print("hi")
         valid_squares_row_col_dict = {}
         if(self.color == RED):
-            if(board[self.row - 1][self.col + 1].piece == None):
-                if(self.row - 1 >= 0 and self.row - 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
-                    valid_squares_row_col_dict["UpRight"]=[self.row - 1, self.col + 1]
-            elif(board[self.row - 1][self.col + 1].piece.color == BLUE and board[self.row - 2][self.col + 2].piece == None):
-                if(self.row - 2 >= 0 and self.row - 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
-                    valid_squares_row_col_dict["UpRightKill"]=[self.row - 2, self.col + 2]
+            if(self.col != 7):
+                if(board[self.row - 1][self.col + 1].piece == None):
+                    if(self.row - 1 >= 0 and self.row - 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
+                        valid_squares_row_col_dict["UpRight"]=[self.row - 1, self.col + 1]
+                elif(board[self.row - 1][self.col + 1].piece.color == BLUE and board[self.row - 2][self.col + 2].piece == None):
+                    if(self.row - 2 >= 0 and self.row - 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
+                        valid_squares_row_col_dict["UpRightKill"]=[self.row - 2, self.col + 2]
             if(board[self.row - 1][self.col - 1].piece == None):
                 if(self.row - 1 >= 0 and self.row - 1 <= 8 and self.col - 1 >= 0 and self.col - 1 <= 8):
                     valid_squares_row_col_dict["UpLeft"]=[self.row - 1, self.col - 1]
@@ -66,16 +66,18 @@ class Piece:
                 if(self.row - 2 >= 0 and self.row - 2 <= 8 and self.col - 2 >= 0 and self.col - 2 <= 8):
                     valid_squares_row_col_dict["UpLeftKill"]=[self.row - 2, self.col - 2]
         if(self.color == BLUE):
-            if(board[self.row + 1][self.col + 1].piece == None):
-                if(self.row + 1 >= 0 and self.row + 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
-                    valid_squares_row_col_dict["DownRight"]=[self.row + 1, self.col + 1]
-            elif(board[self.row + 1][self.col + 1].piece.color == BLUE and board[self.row + 2][self.col + 2].piece == None):
-                if(self.row + 2 >= 0 and self.row + 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
-                    valid_squares_row_col_dict["DownRightKill"]=[self.row + 2, self.col + 2]
+            if(self.col != 7):
+                if(board[self.row + 1][self.col + 1].piece == None):
+                    if(self.row + 1 >= 0 and self.row + 1 <= 8 and self.col + 1 >= 0 and self.col + 1 <= 8):
+                        valid_squares_row_col_dict["DownRight"]=[self.row + 1, self.col + 1]
+                elif(board[self.row + 1][self.col + 1].piece.color == RED and board[self.row + 2][self.col + 2].piece == None):
+                    if(self.row + 2 >= 0 and self.row + 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
+                        valid_squares_row_col_dict["DownRightKill"]=[self.row + 2, self.col + 2]
+            print(board[self.row + 1][self.col - 1].piece)
             if(board[self.row + 1][self.col - 1].piece == None):
                 if(self.row + 1 >= 0 and self.row + 1 <= 8 and self.col - 1 >= 0 and self.col - 1 <= 8):
                     valid_squares_row_col_dict["DownLeft"]=[self.row + 1, self.col - 1]
-            elif(board[self.row + 1][self.col - 1].piece.color == BLUE and board[self.row + 2][self.col + 2].piece == None): 
+            elif(board[self.row + 1][self.col - 1].piece.color == RED and board[self.row + 2][self.col + 2].piece == None): 
                 if(self.row + 2 >= 0 and self.row + 2 <= 8 and self.col + 2 >= 0 and self.col + 2 <= 8):
                     valid_squares_row_col_dict["DownLeftKill"]=[self.row + 2, self.col + 2]       
         return valid_squares_row_col_dict
@@ -224,22 +226,27 @@ def main():
     clock = pygame.time.Clock()
     board = Board(WIN)
     click_list = []
-   
+    click_count = 0
+    potential_moves = []
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if(pygame.mouse.get_pressed()[0]):
+                if(click_count != 0):
+                    for move in potential_moves:
+                        pygame.draw.rect(WIN,BLACK,(move[1]* SQUARE_SIZE, move[0]* SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                potential_moves.clear()
+                click_count += 1
                 cl_row, cl_col = get_row_col_with_mouse_pos(pygame.mouse.get_pos())
-                print(cl_row,' ',cl_col)
                 if(board.board[cl_row][cl_col].piece!= None):
                     valid_moves = board.board[cl_row][cl_col].piece.valid_squares_to_move(board.board)
-                    print(valid_moves)
                     for moves in valid_moves.values():
-                        print(moves[0]+1,' ',moves[1]+1)
+                        potential_moves.append([moves[0],moves[1]])
                         pygame.draw.circle(WIN,GREY,((moves[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(moves[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
-                    pygame.display.update()
+                    print(potential_moves)    
+                        #pygame.display.update()
                 #click_list.append([cl_row,cl_col])
                 #print(cl_row," ",cl_col)
                 
