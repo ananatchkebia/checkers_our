@@ -79,13 +79,11 @@ class Board:
         for i in range(0,3):
             for j in range(COLS):
                 if self.board[i][j].square_color == BLACK:
-                    #self.board[i][j] = "BluePiece"
                     self.board[i][j].piece = Piece(i,j,BLUE)
                     self.board[i][j].piece.draw(win)
         for i in range(5,8):
             for j in range(COLS):
                 if self.board[i][j].square_color == BLACK:
-                    #self.board[i][j] = "RedPiece"
                     self.board[i][j].piece = Piece(i,j,RED)
                     self.board[i][j].piece .draw(win)
                     
@@ -93,16 +91,13 @@ class Board:
     def valid_squares_to_move(self,row,col):
         valid_squares_row_col_dict = {}
         if(self.board[row][col].piece.color == RED):
-            if(col != 7 and row < 7):
-                print("here we are 1")
+            if(col != 7 and row <= 7):
                 print(row,' ',col)
                 if(self.board[row - 1][col + 1].piece == None):
-                    print("here we are 2")
                     if(row - 1 >= 0 and col + 1 < 8):
                         valid_squares_row_col_dict["UpRight"]=[row - 1, col + 1]
                 elif(col != 6):
                     if(self.board[row - 1][col + 1].piece.color == BLUE and self.board[row - 2][col + 2].piece == None):
-                        print("here we are 3")
                         if(row - 2 >= 0 and col + 2 < 8):
                             valid_squares_row_col_dict["UpRightKill"]=[row - 2, col + 2]
             if(self.board[row - 1][col - 1].piece == None):
@@ -117,19 +112,16 @@ class Board:
                 if(self.board[row + 1][col + 1].piece == None):
                     if(row + 1 <= 8 and col + 1 < 8):
                         valid_squares_row_col_dict["DownRight"]=[row + 1, col + 1]
-                elif(col != 6 and row <= 6):
+                elif(col != 6 and row < 6):
                         if(self.board[row + 1][col + 1].piece.color == RED and self.board[row + 2][col + 2].piece == None):
                             if(row + 2 < 8 and col + 2 < 8):
                                 valid_squares_row_col_dict["DownRightKill"]=[row + 2, col + 2]
-            print("here we are 1")
             if(row <7):
                 if(self.board[row + 1][col - 1].piece == None):
-                    print("here we are 2")
                     if(row + 1 <= 8 and col - 1 >= 0):
                         valid_squares_row_col_dict["DownLeft"]=[row + 1, col - 1]
-                elif(self.board[row + 1][col - 1].piece.color == RED and self.board[row + 2][col - 2].piece == None):
-                    if(row <6):
-                        print("here we are 3")
+                elif(row <6):
+                    if(self.board[row + 1][col - 1].piece.color == RED and self.board[row + 2][col - 2].piece == None):
                         if(row + 2 < 8 and col + 2 >= 0 ):
                             valid_squares_row_col_dict["DownLeftKill"]=[row + 2, col - 2]
         
@@ -191,17 +183,12 @@ class Board:
             print("you want to move red piece!")
             #move is not valid if it is not directed up with one or two squares
             if(y1 - y2 != 1 and y1 - y2 != 2):
-                print("move is not valid if it is not directed up with one or two squares")
                 return False
             if y1 - y2 == 1:
                 #move is not valid if difference between columns of previous and next positions is not equal to 1 
-                print("y1 - y2 == 1")
                 if(abs(x2 - x1) != 1):
-                    print("abs(x2 - x1) != 1")
-                    print("move is not valid if difference between columns of previous and next positions is not equal to 1")
                     return False
                 else:
-                    print("abs(x2 - x1) == 1")
                     return True
             #here already means that y2-y1=2,so this will be valid only in case of killing piece of opponent
             #so here we have to check two conditions:
@@ -276,39 +263,12 @@ def main():
                             pygame.draw.circle(WIN,GREY,((moves[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(moves[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
                 print("potential moves: ",potential_moves)
                 print("click list: ",click_list)
-                        #pygame.display.update()
-                #click_list.append([cl_row,cl_col])
-                #print(cl_row," ",cl_col)
                 
-               
-                #print("make move ",click_list)
-                #board.make_move(click_list[0][0],click_list[0][1],click_list[1][0],click_list[1][1],WIN)
-                #click_list.clear()
-                #board.board_representation()
-                #break
-            '''
-            if event.type == pygame.MOUSEBUTTONDOWN and event.type == pygame.MOUSEBUTTONDOWN:
-                pos1 = pygame.mouse.get_pos()
-                row1, col1 = get_row_col_with_mouse_pos(pos1)
-                pos2 = pygame.mouse.get_pos()
-                row2, col2 = get_row_col_with_mouse_pos(pos2)
-                board.make_move(row1,col1,row2,col2)
-            '''
+            
         
         pygame.display.update()
     pygame.quit()
-    '''
-    board = Board()
-    board.board_representation()
-    game_end = False
-    while(not game_end):
-        y1,x1 = input("Enter row and column of piece which you want to move seperated by space: ").split()
-        y2,x2 = input("Enter row and column of location where you want to move this piece: ").split()
-        print(board.make_move(int(y1)-1,int(x1)-1,int(y2)-1,int(x2)-1)) 
-        board.board_representation()
-        game_continue = input("If you want to end game print F:")
-        if(game_continue == 'F'): game_end = True
-    '''
+   
 if __name__ == '__main__':
     main()
 
