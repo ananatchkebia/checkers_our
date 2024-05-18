@@ -123,7 +123,7 @@ class Board:
                         valid_squares_row_col_dict["DownLeft"]=[row + 1, col - 1]
                 elif(row <6):
                     if(self.board[row + 1][col - 1].piece.color == RED and self.board[row + 2][col - 2].piece == None):
-                        if(row + 2 < 8 and col + 2 >= 0 ):
+                        if(row + 2 < 8 and col - 2 >= 0 ):
                             valid_squares_row_col_dict["DownLeftKill"]=[row + 2, col - 2]
         
         return valid_squares_row_col_dict
@@ -177,52 +177,23 @@ class Board:
             if(valid_square[0] == y2 and valid_square[1] == x2):return True
         return False
     
-    def game_loop():
-        run = True
-        clock = pygame.time.Clock()
-        board = Board(WIN)
-        click_list = []
-        click_count = 0
-        potential_moves = []
-   
-        while run:
-            clock.tick(FPS)
-            
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-                
-                if(pygame.mouse.get_pressed()[0]):
-                    
-                    movement_done = False
-                    cl_row, cl_col = get_row_col_with_mouse_pos(pygame.mouse.get_pos())
-                    if(board[cl_row][cl_col].square_color == BLACK):continue
-                    #if(click_count % 2 == 0 and board.board[cl_row][cl_col].piece!=)
-                    click_list.append([cl_row,cl_col])
-                
-                    for move in potential_moves:
-                        pygame.draw.circle(WIN,BLACK,((move[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(move[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
-                    
-
-                    if(click_list[-1] in potential_moves):
-                        board.make_move(click_list[-2][0],click_list[-2][1],click_list[-1][0],click_list[-1][1],WIN)  
-                        movement_done =True
-                        print("This is killer:",board.board[cl_row][cl_col].piece.killer)
-                    potential_moves.clear()
-                    board.board_representation()
-                    if(board.board[cl_row][cl_col].piece!= None):
-                        if(not movement_done):
-                            valid_moves = board.valid_squares_to_move(cl_row,cl_col)
-                            for moves in valid_moves.values():
-                                potential_moves.append([moves[0],moves[1]])
-                                pygame.draw.circle(WIN,GREY,((moves[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(moves[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
-                    print("potential moves: ",potential_moves)
-                    print("click list: ",click_list)
-                
-            
-        
-            pygame.display.update()
-        pygame.quit()
+    #this founction we need to control non-avoidance of possible kills
+    #this means that if there is red's turn and on the current board exists movement
+    #thet red piece can kill blue piece, then red can only make this movement
+    
+    #def kill_position_exists_on_current_board(self)
+    
+    def kill_is_possible(self,color):
+        #if color is red,we should check possible moves for all red pieces and 
+        #if killing is possible, then discover which piece can kill
+        for row in range(ROWS):
+            for col in range(COLS):
+                if(self.board[row][col].piece != None):
+                    if(self.board[row][col].piece.color == color):
+                        valid_squares = self.valid_squares_to_move(row,col)
+                        if "UpLeftKill" in valid_squares or "UpRightKill" in valid_squares or "DownRightKill" in valid_squares or "DownLeftKill" in valid_squares:
+                            return True,(row,col)
+        return False
     '''
     def is_legal_move(self,y1,x1,y2,x2):
         #check that destination is black_square(so this square is empty and available)
@@ -299,25 +270,36 @@ def main():
                 run = False
             if(pygame.mouse.get_pressed()[0]):
                 movement_done = False
-                
+                print("click count: ",click_count)
+                print("movement count: ",movement_count)
+
                 cl_row, cl_col = get_row_col_with_mouse_pos(pygame.mouse.get_pos())
                 if(click_count == 0 and board.board[cl_row][cl_col].piece == None):continue
                 if(board.board[cl_row][cl_col].piece != None):    
-                    if(movement_count % 2 == 0 and click_count != 1 and board.board[cl_row][cl_col].piece.color != RED):continue
+                    if(movement_count % 2 == 0  and board.board[cl_row][cl_col].piece.color != RED):
+                        continue
                 if(board.board[cl_row][cl_col].piece != None):
-                    if(movement_count % 2 == 1 and click_count != 1 and board.board[cl_row][cl_col].piece.color != BLUE):continue
+                    if(movement_count % 2 == 1  and board.board[cl_row][cl_col].piece.color != BLUE):continue
+                
+                #check if kill is possible on the current board
+                #if kill is possible,then we should make constrain thet player could not avoid killing
+                if(board.board[cl_row][cl_col].piece != None):
+                    print("kill is possible: ",board.kill_is_possible(board.board[cl_row][cl_col].piece.color))    
+                    if(board.kill_is_possible(board.board[cl_row][cl_col].piece.color) != False):
+                        cl_row, cl_col = board.kill_is_possible(board.board[cl_row][cl_col].piece.color)[1]
+
                 click_list.append([cl_row,cl_col])
                 click_count += 1
                 for move in potential_moves:
                     pygame.draw.circle(WIN,BLACK,((move[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(move[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
-                    
+                
 
                 if(click_list[-1] in potential_moves):
                     board.make_move(click_list[-2][0],click_list[-2][1],click_list[-1][0],click_list[-1][1],WIN)  
                     movement_done =True
                     movement_count += 1
                     click_count = 0
-                    print("This is killer:",board.board[cl_row][cl_col].piece.killer)
+                    #print("This is killer:",board.board[cl_row][cl_col].piece.killer)
                 potential_moves.clear()
                 board.board_representation()
                 
