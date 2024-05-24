@@ -184,28 +184,53 @@ class Board:
             if(valid_square[0] == y2 and valid_square[1] == x2):return True
         return False
     
-    #this function we need to control non-avoidance of possible kills
-    #this means that if there is red's turn and on the current board exists movement
-    #thet red piece can kill blue piece, then red can only make this movement
+    
     def sequential_kills_possible(self,color):
+        possible_sequential_kills = []
         if self.kill_is_possible(color) != False:
             #we must iterate on killing_positions and create copy of new board with these kills and check if in potential
             #board still is possible make kill with the same piece
             #but now we must take in mind the fact that after first killing valid moves will change
             #piece can kill in backward as well as forward
+            #I want to have list of lists,each inner list should be sequence of positions from start position(where killer piece 
+            #stands at the begining of killing) to end position(where killer piece will stand after performing all kills)
+            #and number of inner lists should be equal to number of all possible different ways how player can perform killing movement
+            #One way is one movement,which player can do
+            #this following counter counts number of inner lists,so number of possible movements
+            movement_count = 0
+            
             for kill_position in self.kill_is_possible(color)[1]:
-                print("this is begining of ...")
                 valid_moves = self.valid_squares_to_move(kill_position[0],kill_position[1])
                 valid_moves = {key : value for key, value in valid_moves.items() if "Kill" in key}
-                temp_board = copy.deepcopy(self)
-                for moves in valid_moves.values():
-                    print(moves)
-                    temp_board.make_move(kill_position[0],kill_position[1],moves[0],moves[1])
-                    temp_board.board_representation()
-                    if(temp_board.kill_is_possible(color,False,moves[0],moves[1]) != False):
-                        print(temp_board.kill_is_possible(color,False,moves[0],moves[1])[1])
-                        
+                counter_2 = 0
+                break_here = False
+                while True: 
+                    possible_sequential_kills.append([])
+                    possible_sequential_kills[movement_count].append(kill_position)
 
+                    temp_board = copy.deepcopy(self)
+                
+                    for moves in valid_moves.values():
+                        possible_sequential_kills[movement_count].append(moves)
+                        temp_board.make_move(kill_position[0],kill_position[1],moves[0],moves[1])
+                        temp_board.board_representation()
+                        
+                        if(temp_board.kill_is_possible(color,False,moves[0],moves[1]) != False):
+                            print(temp_board.kill_is_possible(color,False,moves[0],moves[1])[1])
+                            possible_sequential_kills[movement_count].append(temp_board.kill_is_possible(color,False,moves[0],moves[1])[1][counter_2])
+                            counter_2 += 1
+                            if(counter_2 == len(temp_board.kill_is_possible(color,False,moves[0],moves[1])[1])):break_here = True
+                        else:
+                            break_here = True
+                    if(break_here) : break
+                    movement_count += 1
+                movement_count += 1
+            print(possible_sequential_kills)        
+
+
+    #this function we need to control non-avoidance of possible kills
+    #this means that if there is red's turn and on the current board exists movement
+    #thet red piece can kill blue piece, then red can only make this movement
     def kill_is_possible(self,color,first_kill = True,row = None,col = None):
         #if color is red,we should check possible moves for all red pieces and 
         #if killing is possible, then discover which piece can kill
