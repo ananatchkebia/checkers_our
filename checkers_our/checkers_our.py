@@ -1,6 +1,8 @@
+
 from pickle import NONE
 import pygame
 import copy
+import random
 WIDTH, HEIGHT = 500, 500
 ROWS, COLS = 8, 8
 SQUARE_SIZE = WIDTH//COLS 
@@ -278,7 +280,33 @@ class Board:
         if(kill_is_possible): return True, killing_positions
         else: return False
         
+    def make_random_move(self, color, WIN):
+       killing_moves = self.sequential_kills_possible(color)
+       moves = []
         
+       if killing_moves!= False:
+           print(killing_moves)
+           killing_moves = killing_moves[1]
+           killing_way = random.choice(killing_moves)
+           print("killing way: ",killing_way)
+           for index in range(len(killing_way)-1):
+                if index != 0:   
+                    self.make_move(killing_way[index][0],killing_way[index][1],killing_way[index+1][0],killing_way[index+1][1],WIN,valid=True)
+                else:
+                    self.make_move(killing_way[index][0],killing_way[index][1],killing_way[index+1][0],killing_way[index+1][1],WIN)
+       else:
+            for row in range(ROWS):
+               for col in range(COLS):
+                   if self.board[row][col].piece is not None and self.board[row][col].piece.color == color:
+                        valid_squares = self.valid_squares_to_move(row, col)
+                        print(valid_squares)
+                        for move_coords in valid_squares.values():                           
+                                moves.append([row, col, move_coords[0], move_coords[1]])
+            move = random.choice(moves)
+            self.make_move(move[0], move[1], move[2], move[3], WIN)
+            
+
+       return True
 def cleaning_old(board,cl_row,cl_col,list_for_possible_moves):
         pygame.draw.rect(WIN,BLACK,(cl_col*SQUARE_SIZE,cl_row*SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE))
         pygame.draw.circle(WIN,GREY,((cl_col* SQUARE_SIZE) + SQUARE_SIZE //2 ,(cl_row* SQUARE_SIZE) + SQUARE_SIZE//2), SQUARE_SIZE//2 -8)
@@ -319,7 +347,6 @@ def main():
                 if(board.board[cl_row][cl_col].piece != None):
                     if(movement_count % 2 == 1  and board.board[cl_row][cl_col].piece.color != BLUE):continue
                 
-
                 print("list_for_possible_moves: ", list_for_possible_moves)
                 print("potential_moves: ",potential_moves)
                 
@@ -356,7 +383,6 @@ def main():
                                     cleaning_old(board,click_list[-1][0],click_list[-1][1],list_for_possible_moves)    
                                     break
                 
-
                 click_count += 1
                 click_list.append([cl_row,cl_col]) 
                 print(click_list)
@@ -364,8 +390,8 @@ def main():
                 
                 for move in potential_moves:
                     pygame.draw.circle(WIN,BLACK,((move[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(move[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
-                
-                if(killing):
+                print("killing here : ",killing)
+                if(killing and movement_count%2 != 0):
                     cleaning_old(board,click_list[-2][0],click_list[-2][1],list_for_possible_moves)  
                 if(click_list[-1] in potential_moves):
                     print("here we are")    
@@ -399,6 +425,7 @@ def main():
                             for moves in valid_moves.values():
                                 potential_moves.append([moves[0],moves[1]])
                                 pygame.draw.circle(WIN,GREY,((moves[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(moves[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
+                
                 print("movement_done: ",movement_done)
                 if(movement_done):
                     if list_for_possible_moves:
@@ -430,13 +457,24 @@ def main():
                 print("potential moves: ",potential_moves)
                 print("click list : ",click_list)
                 print("movement count: ",movement_count)
-            
-        
+                
+               
+        # Check if it's the computer's turn (BLUE side)
+        if movement_count % 2 == 1:
+           if board.make_random_move(BLUE, WIN):
+               movement_count += 1
+               list_for_possible_moves = []               
+               kill_but_not_first = False
+               calling  = board.sequential_kills_possible(RED)
+               if(calling != False):
+                    killing = True
+                    list_for_possible_moves = calling[1]
+               else:killing = False
+               
         pygame.display.update()
     pygame.quit()
    
 if __name__ == '__main__':
     main()
-
 
 
