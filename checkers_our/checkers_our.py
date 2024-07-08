@@ -4,9 +4,11 @@ import copy
 import random
 from MCTS import * 
 
+
 WIDTH, HEIGHT = 500, 500
 ROWS, COLS = 8, 8
 SQUARE_SIZE = WIDTH//COLS 
+
 
 RED = (255, 0 , 0)
 WHITE = (255, 255, 255)
@@ -15,10 +17,13 @@ BLUE = (0, 0, 255)
 GREY =  (128, 128, 128)
 CROWN = pygame.transform.scale(pygame.image.load('assets/crown.png'), (44,25))
 
+
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Checkers')
 
+
 FPS = 60
+
 
 #Following is auxiliary method to detect on which square does mouse clicked
 def get_row_col_with_mouse_pos(pos):
@@ -26,6 +31,8 @@ def get_row_col_with_mouse_pos(pos):
     row = y//SQUARE_SIZE 
     col = x//SQUARE_SIZE 
     return row, col
+
+
 
 
 class Piece:
@@ -61,6 +68,7 @@ class Square:
         
 class Board:
     def __init__(self, win =None):
+        print("somethinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
         self.board = []
         
         self.player_1 = RED
@@ -81,6 +89,7 @@ class Board:
                 elif (i % 2) and (j % 2) :
                     self.board[i].append(Square(BLACK)) 
                     pygame.draw.rect(win, BLACK, (i * SQUARE_SIZE,j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
 
         self.initial_setup(win)
         
@@ -175,6 +184,7 @@ class Board:
                     if(win != False):
                         pygame.draw.rect(win, BLACK, ((x1+1) * SQUARE_SIZE,(y1-1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
+
             #this is simple movement,so we just have to swap values on the board's following locations[y1][x1] and [y2][y1] 
             self.board[y2][x2], self.board[y1][x1] = self.board[y1][x1], self.board[y2][x2]
             if(win != False):
@@ -195,7 +205,7 @@ class Board:
         possible_sequential_kills = []
         if self.kill_is_possible(color) != False:
                 
-            
+            '''
             #we must iterate on killing_positions and create copy of new board with these kills and check if in potential
             #board still is possible make kill with the same piece
             #but now we must take in mind the fact that after first killing valid moves will change
@@ -205,6 +215,7 @@ class Board:
             #and number of inner lists should be equal to number of all possible different ways how player can perform killing movement
             #One way is one movement,which player can do
             #this following counter counts number of inner lists,so number of possible movements
+            '''
             
             counter = 0
             for kill_position in self.kill_is_possible(color)[1]:
@@ -226,6 +237,7 @@ class Board:
                 possible_sequential_kills[i].reverse()    
             return True, possible_sequential_kills
         else: return False
+
 
     def auxiliary_recursive_function(self,row,col,color,temp_board,possible_sequential_kills):
         if(temp_board.kill_is_possible(color,False,row,col) != False):
@@ -284,36 +296,7 @@ class Board:
                         killing_positions.append([row-2,col-2])
         if(kill_is_possible): return True, killing_positions
         else: return False
-        
-    def make_random_move(self, color, WIN):
-       killing_moves = self.sequential_kills_possible(color)
-       moves = []
-        
-       if killing_moves!= False:
-           print(killing_moves)
-           killing_moves = killing_moves[1]
-           killing_way = random.choice(killing_moves)
-           print("killing way: ",killing_way)
-           for index in range(len(killing_way)-1):
-                if index != 0:   
-                    self.make_move(killing_way[index][0],killing_way[index][1],killing_way[index+1][0],killing_way[index+1][1],WIN,valid=True)
-                else:
-                    self.make_move(killing_way[index][0],killing_way[index][1],killing_way[index+1][0],killing_way[index+1][1],WIN)
-       else:
-            for row in range(ROWS):
-               for col in range(COLS):
-                   if self.board[row][col].piece is not None and self.board[row][col].piece.color == color:
-                        valid_squares = self.valid_squares_to_move(row, col)
-                        print(valid_squares)
-                        for move_coords in valid_squares.values():                           
-                                moves.append([row, col, move_coords[0], move_coords[1]])
-            move = random.choice(moves)
-            self.make_move(move[0], move[1], move[2], move[3], WIN)
-            
-
-       return True
     
-
    #terminal state function
     def is_win(self):
         for i in range(COLS):
@@ -323,23 +306,23 @@ class Board:
                 return True
         return False
     
-    def generate_states(self):
+    def generate_states(self,color):
         #this is list of next possible states
         actions = []
-        kills = self.sequential_kills_possible(BLUE)
+        kills = self.sequential_kills_possible(color)
         if kills != False:
            for way in kills[1]:
                 temp_board = copy.deepcopy(self)
                 for index in range(len(way)-1):
                     if index != 0:   
-                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN,valid=True)
+                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],valid=True)
                     else:
-                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN)
+                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1])
                 actions.append(temp_board)
         else:
             for row in range(ROWS):
                 for col in range(COLS):
-                    if(self.board[row][col].piece!= None and self.board[row][col].piece.color == BLUE):
+                    if(self.board[row][col].piece!= None and self.board[row][col].piece.color == color):
                         valid_actions = self.valid_squares_to_move(row,col)
                         if(valid_actions):
                             for position in valid_actions.values():
@@ -350,6 +333,58 @@ class Board:
         #    state.board_representation()
         #    print()
         return actions
+    
+    
+    def perform_next_action(self,best_state):
+        kills = self.sequential_kills_possible(BLUE)
+        print(self.sequential_kills_possible(BLUE))
+        if kills != False:
+            print("here33333333333333333333")
+            for way in kills[1]:
+                temp_board = copy.deepcopy(self)
+                for index in range(len(way)-1):
+                    if index != 0:   
+                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],valid=True)
+                    else:
+                        temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1])
+                if best_state.board.string_repr() == temp_board.string_repr():
+                    temp_board = copy.deepcopy(self)
+                    for index in range(len(way)-1):
+                        if index != 0:   
+                            temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN,valid=True)
+                        else:
+                            temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN)
+                    return
+        else:
+            print("hereeeeeeeeeeehereee")
+            for row in range(ROWS):
+                for col in range(COLS):
+                    if(self.board[row][col].piece!= None and self.board[row][col].piece.color == BLUE):
+                        valid_actions = self.valid_squares_to_move(row,col)
+                        if(valid_actions):
+                            for position in valid_actions.values():
+                                temp_board = copy.deepcopy(self)
+                                temp_board.make_move(row,col,position[0],position[1])
+                                                                
+                                if best_state.board.string_repr() == temp_board.string_repr():
+                                   print("heree222222222222222")
+                                   temp_board = copy.deepcopy(self)
+                                   temp_board.make_move(row,col,position[0],position[1],WIN)
+                                   return
+                
+    
+    def string_repr(self):
+        #define board string representation
+        board_string = ''
+        for row in range(ROWS):
+            for col in range(COLS):
+                if(self.board[row][col].piece != None):
+                    board_string+=" "
+                    board_string += f"rgb{self.board[row][col].piece.color}"
+                    board_string+=" "
+                else:
+                    board_string+=" emptySquare "
+        return board_string    
 def cleaning_old(board,cl_row,cl_col,list_for_possible_moves):
         pygame.draw.rect(WIN,BLACK,(cl_col*SQUARE_SIZE,cl_row*SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE))
         pygame.draw.circle(WIN,GREY,((cl_col* SQUARE_SIZE) + SQUARE_SIZE //2 ,(cl_row* SQUARE_SIZE) + SQUARE_SIZE//2), SQUARE_SIZE//2 -8)
@@ -359,6 +394,7 @@ def cleaning_old(board,cl_row,cl_col,list_for_possible_moves):
                         while(i<len(way)):
                             pygame.draw.circle(WIN,BLACK,((way[i][1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(way[i][0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
                             i+=1
+
 def main(): 
     
     run = True
@@ -505,13 +541,14 @@ def main():
                 print("click list : ",click_list)
                 print("movement count: ",movement_count)
                 
-              
+        pygame.display.update()     
         # Check if it's the computer's turn (BLUE side)
         if movement_count % 2 == 1:
+           (board.player_1,board.player_2 )=(board.player_2,board.player_1)       
            best_move = mcts.search(board)
-           print(best_move.board.board_representation())
-           board.board = best_move.board.board
-           print(board.board_representation())
+           board.perform_next_action(best_move)
+           board = best_move.board
+           
            kill_but_not_first = False
            calling = board.sequential_kills_possible(RED)
            if(calling != False):
@@ -526,6 +563,5 @@ def main():
    
 if __name__ == '__main__':
     main()
-
 
 
