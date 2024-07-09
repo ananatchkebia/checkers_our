@@ -39,8 +39,8 @@ class MCTS():
         #print("here is the beginning of search")
         self.root = TreeNode(initial_state, None)
         #walk through 1000 iterations
-        for iteration in range(10):
-            print("player:",self.root.board.player)
+        for iteration in range(3):
+            #print("player:",self.root.board.player)
             #print("here is search iteration")
             #select a node (selection phase)
             node = self.select(self.root)
@@ -103,7 +103,6 @@ class MCTS():
 
                 #return newly created node
                 return new_node   
-            
         #debugging
         print('Should not get here!!!')    
     # simulate the game via making random moves until reach end of the game

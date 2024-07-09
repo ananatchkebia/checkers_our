@@ -4,7 +4,8 @@ import copy
 import random
 import time
 from MCTS import * 
-
+pygame.init()
+pygame.font.init()
 
 WIDTH, HEIGHT = 500, 500
 ROWS, COLS = 8, 8
@@ -16,7 +17,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 GREY =  (128, 128, 128)
-CROWN = pygame.transform.scale(pygame.image.load('assets/crown.png'), (44,25))
 
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -383,7 +383,16 @@ class Board:
                     board_string+=" "
                 else:
                     board_string+=" emptySquare "
-        return board_string    
+        return board_string 
+    
+    def display_winner(self, winner, win):
+       font = pygame.font.Font(None, 74)
+       text = font.render(f"{winner} wins!", True, (0, 255, 0))
+       win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+       pygame.display.flip()
+       pygame.time.wait(3000)
+       pygame.quit()
+       exit()
 def cleaning_old(board,list_for_possible_moves):
         for way in list_for_possible_moves:  
                         i = 1
@@ -406,6 +415,7 @@ def main():
     killing_started = False
     kill_but_not_first = False
     mcts = MCTS()
+    pygame.init()
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
@@ -475,7 +485,7 @@ def main():
                     movement_done = True
                     if(board.is_win()):
                         print("RED won the game!!!!!!!!") 
-                        pygame.quit()
+                        board.display_winner("RED",WIN)
 
                     movement_count += 1
                 potential_moves.clear()
@@ -547,7 +557,9 @@ def main():
            board = best_move.board
            kill_but_not_first = False
            board.player = RED      
-
+           if(board.is_win()):
+                print("BLUE won the game!!!!!!!!") 
+                board.display_winner("BLUE",WIN)
            calling = board.sequential_kills_possible(RED)
            if(calling != False):
                 killing = True
