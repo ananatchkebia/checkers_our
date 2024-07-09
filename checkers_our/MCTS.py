@@ -35,41 +35,45 @@ class MCTS():
     #search for the best move in the current position
     def search(self, initial_state):
         #create root node
-        print(initial_state)
-        print("here is the beginning of search")
+        #print(initial_state)
+        #print("here is the beginning of search")
         self.root = TreeNode(initial_state, None)
         #walk through 1000 iterations
-        for iteration in range(1):
-            print("here is search iteration")
+        for iteration in range(10):
+            print("player:",self.root.board.player)
+            #print("here is search iteration")
             #select a node (selection phase)
             node = self.select(self.root)
-            print(node.board.board_representation())
-            (node.board.player_1,node.board.player_2)=(node.board.player_2,node.board.player_1)
+            #print(node.board.board_representation())
+            if(node.board.player == BLUE): node.board.player = RED
+            else: node.board.player = BLUE
             #score current node (simulation phase)
             score = self.rollout(node.board)
             # backpropagate results            
             self.backpropagate(node, score)
         #pick up the best move in the current position    
         try:
-            print("the last state:")
-            self.get_best_move(self.root, 0).board.board_representation()
+            #print("the last state:")
+            #self.get_best_move(self.root, 0).board.board_representation()
             return self.get_best_move(self.root, 0)
         except:
             pass
         
     # select most promising node
     def select(self, node):
-        print("here is the beginning of select")
+        #print("here is the beginning of select")
         #make sure that we're dealing with non-terminal nodes
         while not node.is_terminal:
-            print("here is select loop")
+            #print("here is select loop")
             # case where the node is fully expanded
             if node.is_fully_expanded:
                 node = self.get_best_move(node, 2)
-                print("this is get_best_move result:")
-                print(node.board.board_representation())
-                print()
-                print()
+                if(node.board.player == BLUE): node.board.player = RED
+                else: node.board.player = BLUE
+                #print("this is get_best_move result:")
+                #print(node.board.board_representation())
+                #print()
+                #print()
             # case where the node is not fully expanded
             else:
                 #otherwise expand the node
@@ -78,11 +82,11 @@ class MCTS():
     
     #expand node
     def expand(self, node):
-        print("here is the beginning of expand")
+        #print("here is the beginning of expand")
         # generate legal states (moves) for the given node
-        states = node.board.generate_states(node.board.player_1)
+        states = node.board.generate_states(node.board.player)
         # loop over generated states (moves)
-        print(node.children)
+        #print(node.children)
         for state in states:
             #make sure that current state (move) is not present in child nodes
             if state.string_repr() not in node.children:
@@ -105,24 +109,26 @@ class MCTS():
     # simulate the game via making random moves until reach end of the game
         
     def rollout(self, board):
-        print("here is the beginning of rollout")
+        #print("here is the beginning of rollout")
         # make random moves for both sides until terminal state of the game is reached
         while not board.is_win():
-            print("here is rollout loop")
+            #print("here is rollout loop")
             #try to make a move
             try:
                 #make the on board
-                print(board.player_1)
-                board = random.choice(board.generate_states(board.player_1))
-                (board.player_1,board.player_2 )=(board.player_2,board.player_1 )
-                board.board_representation()
+                #print(board.player_1)
+                
+                board = random.choice(board.generate_states(board.player))
+                if(board.player == BLUE):board.player = RED
+                else:board.player = BLUE
+                #board.board_representation()
                 #no moves available
             except:
                 #return a draw score
                 return 0
         #return score from the player "BLUE" perspective
-        if board.player_1 == BLUE:return 1
-        elif board.player_1 == RED: return -1
+        if board.player == BLUE:return 1
+        elif board.player == RED: return -1
 
 
     # backpropogate the number of visits and score up to the root node
@@ -145,8 +151,8 @@ class MCTS():
         #loop over child nodes
         for child_node in node.children.values():
             #define current player
-            if child_node.board.player_1 == BLUE : current_player = 1
-            elif child_node.board.player_1 == RED : current_player = -1
+            if child_node.board.player == BLUE : current_player = 1
+            elif child_node.board.player == RED : current_player = -1
             
             # get move score using UCT formula
             move_score = current_player * child_node.score / child_node.visits + exploration_constant * math.sqrt(math.log(node.visits / child_node.visits))

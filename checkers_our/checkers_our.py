@@ -2,6 +2,7 @@ from pickle import NONE
 import pygame
 import copy
 import random
+import time
 from MCTS import * 
 
 
@@ -68,11 +69,9 @@ class Square:
         
 class Board:
     def __init__(self, win =None):
-        print("somethinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
         self.board = []
         
-        self.player_1 = RED
-        self.player_2 = BLUE
+        self.player = RED
         
         for i in range(ROWS):
             self.board.append([])
@@ -339,7 +338,6 @@ class Board:
         kills = self.sequential_kills_possible(BLUE)
         print(self.sequential_kills_possible(BLUE))
         if kills != False:
-            print("here33333333333333333333")
             for way in kills[1]:
                 temp_board = copy.deepcopy(self)
                 for index in range(len(way)-1):
@@ -354,9 +352,10 @@ class Board:
                             temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN,valid=True)
                         else:
                             temp_board.make_move(way[index][0],way[index][1],way[index+1][0],way[index+1][1],WIN)
+                        time.sleep(1)
+
                     return
         else:
-            print("hereeeeeeeeeeehereee")
             for row in range(ROWS):
                 for col in range(COLS):
                     if(self.board[row][col].piece!= None and self.board[row][col].piece.color == BLUE):
@@ -367,8 +366,8 @@ class Board:
                                 temp_board.make_move(row,col,position[0],position[1])
                                                                 
                                 if best_state.board.string_repr() == temp_board.string_repr():
-                                   print("heree222222222222222")
                                    temp_board = copy.deepcopy(self)
+                                   time.sleep(1)
                                    temp_board.make_move(row,col,position[0],position[1],WIN)
                                    return
                 
@@ -385,10 +384,7 @@ class Board:
                 else:
                     board_string+=" emptySquare "
         return board_string    
-def cleaning_old(board,cl_row,cl_col,list_for_possible_moves):
-        pygame.draw.rect(WIN,BLACK,(cl_col*SQUARE_SIZE,cl_row*SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE))
-        pygame.draw.circle(WIN,GREY,((cl_col* SQUARE_SIZE) + SQUARE_SIZE //2 ,(cl_row* SQUARE_SIZE) + SQUARE_SIZE//2), SQUARE_SIZE//2 -8)
-        pygame.draw.circle(WIN,board.board[cl_row][cl_col].piece.color,((cl_col* SQUARE_SIZE) + SQUARE_SIZE //2 ,(cl_row* SQUARE_SIZE) + SQUARE_SIZE//2), SQUARE_SIZE//2 -10)
+def cleaning_old(board,list_for_possible_moves):
         for way in list_for_possible_moves:  
                         i = 1
                         while(i<len(way)):
@@ -431,8 +427,8 @@ def main():
                 print("potential_moves: ",potential_moves)
                 
                 invalid_click = False
-                
-                if list_for_possible_moves:
+                print(movement_count)
+                if list_for_possible_moves :
                     squares_to_move_from = []
                     for way in list_for_possible_moves:
                         if way[0] not in squares_to_move_from:
@@ -442,7 +438,7 @@ def main():
                     if [cl_row,cl_col] not in squares_to_move_from and [cl_row,cl_col] not in potential_moves:
                         invalid_click = True
                     if invalid_click:
-                        cleaning_old(board,click_list[-1][0],click_list[-1][1],list_for_possible_moves)
+                        cleaning_old(board,list_for_possible_moves)
                         break
                     
                     if potential_moves:
@@ -454,13 +450,13 @@ def main():
                                 index = 0
                                 for way in list_for_possible_moves:
                                     if(way[1] == [cl_row,cl_col]):
-                                        cleaning_old(board,click_list[-1][0],click_list[-1][1],list_for_possible_moves)    
+                                        cleaning_old(board,list_for_possible_moves)    
                                         break
                                     index += 1
                                 if list_for_possible_moves[index][0] != click_list[-1]:
                                     invalid_click = True
                                 if invalid_click:
-                                    cleaning_old(board,click_list[-1][0],click_list[-1][1],list_for_possible_moves)    
+                                    cleaning_old(board,list_for_possible_moves)    
                                     break
                 
                 click_count += 1
@@ -472,14 +468,15 @@ def main():
                     pygame.draw.circle(WIN,BLACK,((move[1]* SQUARE_SIZE) + SQUARE_SIZE //2 ,(move[0]* SQUARE_SIZE) + SQUARE_SIZE//2), 10)
                 print("killing here : ",killing)
                 if(killing and movement_count%2 != 0):
-                    cleaning_old(board,click_list[-2][0],click_list[-2][1],list_for_possible_moves)  
+                    cleaning_old(board,list_for_possible_moves)  
                 if(click_list[-1] in potential_moves):
-                    print("here we are")    
+                    #print("here we are")    
                     board.make_move(click_list[-2][0],click_list[-2][1],click_list[-1][0],click_list[-1][1],WIN,valid=kill_but_not_first)  
                     movement_done = True
                     if(board.is_win()):
                         print("RED won the game!!!!!!!!") 
-                        
+                        pygame.quit()
+
                     movement_count += 1
                 potential_moves.clear()
                 print("movement_done: ",movement_done)
@@ -493,8 +490,8 @@ def main():
                                 potential_moves.append(way[1])
                                 i+=1
                             
-                            pygame.draw.rect(WIN,GREY,(cl_col*SQUARE_SIZE,cl_row*SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE))
-                            pygame.draw.circle(WIN,board.board[cl_row][cl_col].piece.color,(cl_col*SQUARE_SIZE + SQUARE_SIZE//2,cl_row*SQUARE_SIZE + SQUARE_SIZE//2),SQUARE_SIZE//2-10)
+                            #pygame.draw.rect(WIN,GREY,(cl_col*SQUARE_SIZE,cl_row*SQUARE_SIZE,SQUARE_SIZE,SQUARE_SIZE))
+                            #pygame.draw.circle(WIN,board.board[cl_row][cl_col].piece.color,(cl_col*SQUARE_SIZE + SQUARE_SIZE//2,cl_row*SQUARE_SIZE + SQUARE_SIZE//2),SQUARE_SIZE//2-10)
                             
                             for way in list_for_possible_moves:
                                 if(way[0] == [cl_row,cl_col]):
@@ -544,17 +541,20 @@ def main():
         pygame.display.update()     
         # Check if it's the computer's turn (BLUE side)
         if movement_count % 2 == 1:
-           (board.player_1,board.player_2 )=(board.player_2,board.player_1)       
+           board.player = BLUE      
            best_move = mcts.search(board)
            board.perform_next_action(best_move)
            board = best_move.board
-           
            kill_but_not_first = False
+           board.player = RED      
+
            calling = board.sequential_kills_possible(RED)
            if(calling != False):
                 killing = True
                 list_for_possible_moves = calling[1]
-           else:killing = False
+           else:
+               killing = False
+               list_for_possible_moves=[]
            
            movement_count += 1    
            
