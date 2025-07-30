@@ -1,4 +1,4 @@
-#♟️ Checkers Game (Python + Pygame)
+#♟ Checkers Game (Python + Pygame)
 
 This is a graphical Checkers (Draughts) game built with Python and Pygame(but partial game, it's not completed). It allows you to play against AI, for this I used MCTS algorithm. The game implements basic rules of checkers including normal moves and captures.
 
