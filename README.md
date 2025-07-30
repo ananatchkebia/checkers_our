@@ -1,4 +1,4 @@
-#♟ Checkers Game (Python + Pygame + AI)
+♟ Checkers Game (Python + Pygame + AI)
 
 This is a graphical Checkers (Draughts) game built with Python and Pygame(but partial game, it's not completed). It allows you to play against AI, for this I used MCTS algorithm. The game implements basic rules of checkers including normal moves and captures.
 
@@ -10,6 +10,7 @@ This is a graphical Checkers (Draughts) game built with Python and Pygame(but pa
 - playing against AI 
 - Highlighting valid moves
 - Piece capturing logic(even several following capturing logic, if there is such case)
+- Temporary winning condition(When one of the players achive first row of opposite edge of board, he wins, obviously this isn't winning condition in traditional checher's game, it was just temporary winning condition defined by me to test how game works at that moment)
 
 ## Technlogies used
 
@@ -20,7 +21,7 @@ This is a graphical Checkers (Draughts) game built with Python and Pygame(but pa
 ## Future improvements
 
 - write Queen's moves logic
-- define winning conditions
+- define new real winning conditions, that exists in traditional checker's game
 - make sure that everything works right and there aren't unexpected bugs
 
 ## How to run and see game
